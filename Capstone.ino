@@ -128,7 +128,6 @@ void loop() {
 // ISR(TIMER2_COMPA_vect) {
 //   // Set the flag to indicate the timer interrupt was triggered
 //   timerFlag = true;
-}
 
 
 

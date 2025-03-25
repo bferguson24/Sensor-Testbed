@@ -428,34 +428,34 @@ void scoop::groundLevel(){
 }
 
 
-uint8_t scoop::serialSync(){
-//Sync Parameters; 
-  uint8_t SYNC_WORD_SIZE = 4;
-  byte sync_word[4] = {0xDA, 0xBA, 0xD0, 0x00};
+// uint8_t scoop::serialSync(){
+// //Sync Parameters; 
+//   uint8_t SYNC_WORD_SIZE = 4;
+//   byte sync_word[4] = {0xDA, 0xBA, 0xD0, 0x00};
   
-    if (Serial.availale() >= SYNC_WORD_SIZE + 1){
-      byte buffer[SYNC_WORD_SIZE + 1]
+//     if (Serial.availale() >= SYNC_WORD_SIZE + 1){
+//       byte buffer[SYNC_WORD_SIZE + 1]
 
 
-    for (int i = 0; i < SYNC_WORD_SIZE; i++){
-      buffer[i] = Serial.read(); 
-    }
+//     for (int i = 0; i < SYNC_WORD_SIZE; i++){
+//       buffer[i] = Serial.read(); 
+//     }
 
-    bool sync_match = true; 
-    for (int i = 0; i < SYNC_WORD_SIZE; i++){
-      if (buffer[i] != sync_word[i]){
-      sync_match = false;
-      break;
-      }
-    }
+//     bool sync_match = true; 
+//     for (int i = 0; i < SYNC_WORD_SIZE; i++){
+//       if (buffer[i] != sync_word[i]){
+//       sync_match = false;
+//       break;
+//       }
+//     }
 
-    if (sync_match){
-      uint8_t byte_length = Serial.read();
-      return byte_length
-      this->SYNC_STATUS == TRUE; 
-    }
-  }
-}
+//     if (sync_match){
+//       uint8_t byte_length = Serial.read();
+//       return byte_length
+//       this->SYNC_STATUS == TRUE; 
+//     }
+//   }
+// }
 
 
 

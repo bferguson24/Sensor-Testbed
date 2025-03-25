@@ -16,6 +16,11 @@ SerialPacket::SerialPacket() {
     sync_word[3] = 0x00;
   };
 
+void SerialPacket::setCallback(void (*cb)(uint8_t[])){
+  callback = cb;
+}
+
+
 
 // typedef enum{
 //   STATE_WAITING_SYNC_0,
@@ -23,6 +28,7 @@ SerialPacket::SerialPacket() {
 //   STATE_WAITING_SYNC_2,
 //   STATE_WAITING_SYNC_3,
 //   STATE_WAITING_LEN,
+//   STATE_WAITING_CMD,
 //   STATE_WAITING_READ_BYTES,
 // } state_t; 
 
@@ -63,6 +69,7 @@ void SerialPacket::read_state_task(){
     case STATE_WAITING_SYNC_3:
       if(byte == sync_word[3]){
         state = STATE_WAITING_LEN;
+        // Serial.println("Sync Word Found"); 
         break;
       }
       else{
@@ -72,23 +79,26 @@ void SerialPacket::read_state_task(){
 
     case STATE_WAITING_LEN:
       this->incoming_packet_length = byte; 
+      // Serial.print("Incoming Length = "); 
+      // Serial.println(incoming_packet_length); 
       state = STATE_WAITING_READ_BYTES; 
       break; 
 
     case STATE_WAITING_READ_BYTES:
-      if (this->current_idx < this->incoming_packet_length){
+      if (this->current_idx < this->incoming_packet_length - 1){
         this->buffer[this->current_idx] = byte; 
+        // Serial.println(buffer[current_idx]); 
+        current_idx++;
+        
+      } else {
+        // Serial.println("data read complete");
+        callback(this->buffer);
+
+        this->current_idx = 0; 
+        state = STATE_WAITING_SYNC_0; 
       }
-      state = STATE_DATA_COMPLETE; 
       break; 
 
-    case STATE_DATA_COMPLETE:
-      
-
-      // processCommand(buffer); 
-      this->current_idx = 0; 
-      state = STATE_WAITING_SYNC_0; 
-      break;
   }
 }
 

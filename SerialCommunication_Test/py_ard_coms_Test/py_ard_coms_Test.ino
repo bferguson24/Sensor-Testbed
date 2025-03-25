@@ -3,6 +3,7 @@
 
 SerialPacket packet; 
 scoop scoop; 
+
 // uint8_t buffer[512]; 
 // // int current_idx = 0; 
 
@@ -95,16 +96,16 @@ scoop scoop;
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600); // Print Statements
-  Serial2.begin(9600); // Incoming python commands
-
+  Serial.begin(115200); // Print Statements
+  Serial2.begin(115200); // Incoming python commands
+  packet.setCallback(scoop::process_command);
 }
 
 
 void loop() {
 
 packet.read_state_task(); 
-  // // packet.read_task();
+  // packet.read_task();
   // if (Serial2.available() > 0){
   
   //   buffer[current_idx] = Serial2.read();

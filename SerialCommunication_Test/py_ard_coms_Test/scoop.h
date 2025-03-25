@@ -10,5 +10,5 @@ class scoop{
     void home();
     void stop();
     void resume(); 
-    void process_command(uint8_t *buffer); 
+    static void process_command(uint8_t *buffer); 
 };

@@ -19,18 +19,54 @@ void resume(){
 
 
 void scoop::process_command(uint8_t buffer[]){
+
+//Check buffer
+// for (int i = 0; i < 17 ; i++){
+//   Serial.println(buffer[i], HEX);
+// }
+
+// Serial.println("Process Command Called!"); 
   command_t *cmd =  (command_t*) buffer; 
 
   switch(*cmd){
     case COMMAND_START:
+      Serial.println("START"); 
+
       break;
 
     case COMMAND_STOP: 
+      Serial.println("STOP"); 
       break; 
+
+    case COMMAND_HOME: 
+      Serial.println("HOME COMMAND"); 
+      break; 
+
       
     case COMMAND_MOVE: 
-      move_cmd_t *move_cmd = (move_cmd_t*) (buffer); 
-      // scoop->move(move_cmd.waypoint);
+      Serial.print("MOVE COMMAND"); 
+      Serial.print("  ");
+      
+      // float *x = (float *)(buffer + 1);
+      // Serial.print("x = "); 
+      // Serial.println(*x);
+
+      move_cmd_t *move_cmd = (move_cmd_t*) (buffer);  
+      Serial.print("X: ");
+      Serial.print(move_cmd->waypoint.x, 6); 
+      Serial.print("  ");
+
+      Serial.print("Y: ");
+      Serial.print(move_cmd->waypoint.y, 6);
+      Serial.print("  ");
+
+      Serial.print("Pitch: ");
+      Serial.print(move_cmd->waypoint.pitch, 6);
+      Serial.print("  ");
+
+      Serial.print("Vibe Speed: ");
+      Serial.println(move_cmd->waypoint.vibe_speed, 6);
+
       break; 
   }
 }

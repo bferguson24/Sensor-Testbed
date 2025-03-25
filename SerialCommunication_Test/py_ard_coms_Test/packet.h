@@ -20,14 +20,14 @@ class SerialPacket {
     // Scoop *scoopInstance = nullptr;
 
     // CommandCallback callback = nullptr;
-
-
-
-
+    
     SerialPacket();
     void read_task();
     void read_state_task(); 
-    // void setCallback(Scoop *instance, CommandCallback func)
+    void (*callback)(uint8_t[]); 
+
+    void setCallback(void (*cb)(uint8_t[]));
+
 
 
   private: 
