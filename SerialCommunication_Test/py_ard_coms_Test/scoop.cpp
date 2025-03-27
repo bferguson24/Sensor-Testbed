@@ -6,6 +6,7 @@
 scoop::scoop(){}
 
 void move(float x, float y, float pitch){
+
 }
 
 void home(){
@@ -19,13 +20,6 @@ void resume(){
 
 
 void scoop::process_command(uint8_t buffer[]){
-
-//Check buffer
-// for (int i = 0; i < 17 ; i++){
-//   Serial.println(buffer[i], HEX);
-// }
-
-// Serial.println("Process Command Called!"); 
   command_t *cmd =  (command_t*) buffer; 
 
   switch(*cmd){
@@ -47,10 +41,6 @@ void scoop::process_command(uint8_t buffer[]){
       Serial.print("MOVE COMMAND"); 
       Serial.print("  ");
       
-      // float *x = (float *)(buffer + 1);
-      // Serial.print("x = "); 
-      // Serial.println(*x);
-
       move_cmd_t *move_cmd = (move_cmd_t*) (buffer);  
       Serial.print("X: ");
       Serial.print(move_cmd->waypoint.x, 6); 
@@ -66,7 +56,6 @@ void scoop::process_command(uint8_t buffer[]){
 
       Serial.print("Vibe Speed: ");
       Serial.println(move_cmd->waypoint.vibe_speed, 6);
-
       break; 
   }
 }

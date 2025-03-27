@@ -1,9 +1,8 @@
 #pragma once
 
 #include <RoboClaw.h>
-#include "HX711.h"
 #include "pid.h"
-#include "sensors.h"
+#include "taskhandler.h"
 
 //Peyton 
 //include any accel libraries here: 
@@ -24,15 +23,10 @@ private:
   
   int xLimPin;
   int yLimPin;
-  int Fx_DT;
-  int Fx_SCK;
-  int Fy_DT;
-  int Fy_SCK;
-  int accelAddress; 
 
-//Communication Stuff;
-  bool SYNC_STATUS; 
-  uint8_t incomingLength; 
+  static scoop* instance; 
+
+
 
 
   class motor {
@@ -51,7 +45,7 @@ private:
     : pwm(pwmPin), dir1(dir1Pin), dir2(dir2Pin), analogReadPin(analogPin), analog_offset(analog_offset), pid(PID){}
 
     float readAngle();
-    float setAngle(float angleInput);
+    float set_angle(float angleInput);
     void setSpeed(float freq); 
     void setDutyCycle(float dutyCycle); 
 
@@ -62,10 +56,12 @@ private:
 
 public:
     //Current Position Command
-    float x;
-    float y; 
-    float pitch; 
-    float vibe; 
+    // float x;
+    // float y; 
+    // float pitch; 
+    // float vibe; 
+
+    waypoint_t *current_waypoint; 
 
     //Accelerometer Data
     float ax;
@@ -98,8 +94,7 @@ public:
     motor pitchMotor; 
     motor vibeMotor; 
 
-    loadcell &Fx; 
-    loadcell &Fy; 
+
 
     //Contructor
     scoop(RoboClaw &roboclaw, uint8_t address, 
@@ -110,9 +105,6 @@ public:
           int pitch_pwm, int vibe_pwm,
           int pitch_angle_pin, int pitch_offset, 
           PID_controller *pitch_pid,
-          loadcell &FX_cell, loadcell &FY_cell,
-          // int Fx_DT, int Fx_SCK, int Fy_DT, int Fy_SCK, 
-          int I2cAdd,
           float xMax, float xMin, 
           float yMax, float yMin, 
           float pitchMax, float pitchMin, 
@@ -125,12 +117,13 @@ public:
     void readTask(); 
     void PIDtask(); 
     void commandHandlerTask(); 
-
+    static void process_command(uint8_t *buffer); 
+    void update_position(waypoint_t *waypoint);
 
     void home();
     void excavateSequence(); 
-    void moveAbsolute(float x, float y, float pitch, float vibe = 0, uint32_t vmax_x = 10000, uint32_t a_x = 10000 , uint32_t vmax_y = 10000, uint32_t a_y = 10000); //Move to absolute position using Home Values
-    bool moveRelative(double x, double y, double pitch, uint32_t vmax_x = 10000, uint32_t a_x = 10000 , uint32_t vmax_y = 10000, uint32_t a_y = 10000); // Move from current position by distance x y pitch 
+    // void moveAbsolute(float x, float y, float pitch, float vibe = 0, uint32_t vmax_x = 10000, uint32_t a_x = 10000 , uint32_t vmax_y = 10000, uint32_t a_y = 10000); //Move to absolute position using Home Values
+    // bool moveRelative(double x, double y, double pitch, uint32_t vmax_x = 10000, uint32_t a_x = 10000 , uint32_t vmax_y = 10000, uint32_t a_y = 10000); // Move from current position by distance x y pitch 
     void groundLevel();
     void readAccel();
     void readAllSensors();

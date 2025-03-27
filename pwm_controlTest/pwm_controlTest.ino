@@ -49,13 +49,13 @@ float readAngle(){
 
 float incrementAngle(int analogPin, float &currentAngle, float min, float max) {  // Pass by reference
   // Read Raw value;
-  int deadBand = 10;  // Initialize deadBand to avoid undefined behavior
+  int deadBand = 30;  // Initialize deadBand to avoid undefined behavior
   int stepSize = 1; 
   int maxAnalog = 1023; 
   int meanAnalog = (maxAnalog/2);
 
 
-  float val = analogRead(analogPin);  // Read the analog input as an integer
+  float val = maxAnalog - analogRead(analogPin);  // Read the analog input as an integer
   val = (float)val;  // Convert to float
 
   if (val > (meanAnalog + deadBand)) {
@@ -103,12 +103,13 @@ void setAngle(float angle, int d1, int d2, int pwm){
 
 void loop() {
 
-// int command = map(analogRead(A0),0,1023,-45,45);
-// setDutyCycle(command, enApin, in1, in2);
+float command = incrementAngle(A0, angle, -100,100); 
+Serial.println(command); 
+setDutyCycle(command, enApin, in1, in2);
 
 
-float angleVal = incrementAngle(A0, angle, -45, 45); 
-// int command = map(analogRead(A0),0,1023,-45,45);
-setAngle(angleVal, in1, in2, enApin); 
+// float angleVal = incrementAngle(A0, angle, -45, 45); 
+// // int command = map(analogRead(A0),0,1023,-45,45);
+// setAngle(angleVal, in1, in2, enApin); 
 // readAngle(); 
 }

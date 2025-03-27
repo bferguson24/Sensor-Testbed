@@ -1,0 +1,6 @@
+Loadcell States:
+
+1
+2 - Working
+3
+4

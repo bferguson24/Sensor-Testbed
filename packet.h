@@ -20,8 +20,8 @@ class SerialPacket {
     // Scoop *scoopInstance = nullptr;
 
     // CommandCallback callback = nullptr;
-    
     SerialPacket();
+
     void read_task();
     void read_state_task(); 
 

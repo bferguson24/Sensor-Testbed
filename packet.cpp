@@ -9,7 +9,8 @@ SerialPacket::SerialPacket() {
     incoming_packet_length = 0;
     sync_idx = 0;
     sync_found = false;
-
+    
+    setCallback(scoop::process_command);
     sync_word[0] = 0xDA;
     sync_word[1] = 0xBA;
     sync_word[2] = 0xD0;
