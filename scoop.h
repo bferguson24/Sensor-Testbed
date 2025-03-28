@@ -8,26 +8,60 @@
 //include any accel libraries here: 
 
 
+
+typedef enum{
+  STATE_SYSTEMS_OFF,
+  STATE_WAITING_ENC1,
+  STATE_MOVE_X0,
+  STATE_WAITING_ENC2,
+  STATE_MOVE_Y0,
+  STATE_MOVE_YPRE, 
+  STATE_MEASURE_YGND,
+  STATE_WAITING_PAUSE1,
+  STATE_RETURN_Y0,
+  STATE_HOME_COMPLETE
+} homing_state_t; 
+
 class scoop {
 
 private:
-  //Private Variables
+//Pinout
   RoboClaw &roboclaw;
   uint8_t address;
   int pitchPWMpin;
   int pitchDirPin; 
-
-//Used to correct Direction of motors;
-  int motor1dir;
-  int motor2dir;
-  
   int xLimPin;
   int yLimPin;
+  int motor1dir;
+  int motor2dir;
 
+//Joint Limits:
+  float xMax;
+  float xMin;
+  float yMax;
+  float yMin;
+  float pitchMax;
+  float pitchMin; 
+  float vibeMin;
+  float vibeMax; 
+
+//Homing Parameters
+  uint32_t M1_lim_counts; 
+  uint32_t M2_lim_counts;
+  float y_gnd;  
+
+//Constants
+  float x0;
+  float y0; 
+  float y_gnd_pre; 
+  static const float gearLead; // NA
+  static float encoder_output_ratio; // NA
+  static const float shaft_lead; // mm 
+
+//Control
+  command_t activeCommand; 
+  homing_state_t home_status; 
   static scoop* instance; 
-
-
-
 
   class motor {
   public: 
@@ -55,46 +89,10 @@ private:
   }; 
 
 public:
-    //Current Position Command
-    // float x;
-    // float y; 
-    // float pitch; 
-    // float vibe; 
 
     waypoint_t *current_waypoint; 
-
-    //Accelerometer Data
-    float ax;
-    float ay;
-    float az;
-  
-    //Joint Limits:
-    float xMax;
-    float xMin;
-    float yMax;
-    float yMin;
-    float pitchMax;
-    float pitchMin; 
-    float vibeMin;
-    float vibeMax; 
-
-    //These parameters shouldn't be floats or ints, not sure on exact size?
-
-    //HOME DATA
-    int homeXenc;
-    int homeYenc; 
-    float groundDistance; 
-
-    // System Parameters
-    static const float gearLead; // NA
-    static float encoder_output_ratio; // NA
-    static const float shaft_lead; // mm 
-
-
     motor pitchMotor; 
     motor vibeMotor; 
-
-
 
     //Contructor
     scoop(RoboClaw &roboclaw, uint8_t address, 
@@ -112,14 +110,12 @@ public:
 
 
     
-    void serialTask();
-    void moveTask(); 
-    void readTask(); 
-    void PIDtask(); 
+    void move_task(uint32_t vmax_x = 10000, uint32_t a_x = 10000 , uint32_t vmax_y = 10000, uint32_t a_y = 10000); 
+    void PID_task();
     void commandHandlerTask(); 
     static void process_command(uint8_t *buffer); 
     void update_position(waypoint_t *waypoint);
-
+    void set_command(command_t *command); 
     void home();
     void excavateSequence(); 
     // void moveAbsolute(float x, float y, float pitch, float vibe = 0, uint32_t vmax_x = 10000, uint32_t a_x = 10000 , uint32_t vmax_y = 10000, uint32_t a_y = 10000); //Move to absolute position using Home Values

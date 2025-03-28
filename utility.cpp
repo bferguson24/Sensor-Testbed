@@ -18,7 +18,7 @@ float analogStep(int analogPin, int deadBand, float stepSize, float min, float m
   float val = 0.0; 
 
   if (rawVal > avgAnalog + deadBand){
-    val = (rawVal - avgAnalog) / (1023.0 - avgAnalog) * stepSize;
+    val = (rawVal - (avgAnalog + deadBand)) / (1023.0 - (avgAnalog + deadBand)) * stepSize;
   }
   else if (rawVal < (avgAnalog - deadBand)){
     val = (rawVal - avgAnalog) / (avgAnalog - 0.0) * stepSize;

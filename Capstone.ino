@@ -6,9 +6,11 @@
 #include "utility.h"
 #include "taskhandler.h"
 #include "packet.h"
+#include "controller.h"
 
 //Packet 
 SerialPacket packet; 
+Controller controller(30, 0.5); 
 
 
 //Scoop Parameters
@@ -39,7 +41,7 @@ SerialPacket packet;
   float pitchMax = 20; 
   float pitchMin = -20; 
   float vibeMin = 0;
-  float vibeMax = 40; 
+  float vibeMax = 100; 
 
 RoboClaw roboclaw(&Serial1, 1000);
 
@@ -59,31 +61,47 @@ waypoint_t start_waypoint = {1,2,3,4};
 void setup() {
   Serial.begin(115200); // Print Statements
   Serial2.begin(115200); // Incoming python commands
-  
-  packet.setCallback(scoop::process_command);
 
+  pinMode(3, OUTPUT); 
+  pinMode(2, OUTPUT); 
+
+  packet.setCallback(scoop::process_command);
 
   while (!Serial);
    for (int i = 0; i < 50; i++) {
     Serial.println();
   }
-
-  // setupTimer2();  // Setup Timer2 
-  // sei();  // Enable global interrupts
   scoop.init();
-
 }
-
 
 
 void loop() {
-// Main Loop:
 
-packet.read_state_task(); 
+controller.multichannel_read();
 
-// scoop.update_position(&start_waypoint); 
+uint32_t y = controller.a0.output; 
+uint32_t x = controller.a1.output; 
+float vibe = controller.a2.output; 
 
+// roboclaw.SpeedAccelDeccelPositionM1M2(address, accel, speed, accel, x, accel, speed, accel, y, 0);
+scoop.vibeMotor.setDutyCycle(vibe); 
 }
+
+
+
+
+// scoop.move_task(); 
+
+
+// Serial.print(0.0); 
+// Serial.print(","); 
+// Serial.print(controller.a0.output); 
+// Serial.print(","); 
+// Serial.print(controller.a1.output); 
+// Serial.print(",");
+// Serial.println(50.0); 
+
+
 
 
 

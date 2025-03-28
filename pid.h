@@ -18,7 +18,7 @@ public:
   bool useSqrtErrorP = false;
   float lastError = 0.0f; 
 
-  float PID_task(float processIn);
+  float PID_task();
   void PID_init(); 
 
   //Constructor:

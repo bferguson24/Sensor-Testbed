@@ -9,7 +9,10 @@ enum {
   COMMAND_STOP,
   COMMAND_HOME,
   COMMAND_MOVE,
+  COMMAND_IDLE, 
 }; 
+
+
 
 typedef __attribute__((packed)) struct{
   float x;

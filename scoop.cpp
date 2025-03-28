@@ -57,22 +57,10 @@ void scoop::init(){
   pinMode(this->pitchMotor.dir1, OUTPUT);
   pinMode(this->pitchMotor.dir2, OUTPUT);
 
-  TCCR3A |= (1 << CS31) | (1 << CS30); // 64 Prescaler
+  TCCR3A = (1 << WGM31);                 // Fast PWM mode 14
+  TCCR3B = (1 << WGM32) | (1 << WGM33) | (1 << CS31);  // Prescaler = 8
+  ICR3 = 99;  // Set PWM period (for 20 kHz)
 
-  TCCR3A = 0;
-  TCCR3B = 0;
-  TCNT3 = 0; // Reset Counter
-
-  // Fast PWM Mode with ICR3 as TOP (Mode 14)
-  TCCR3A |= (1 << COM3A1);  // Non-inverting PWM on OC3A
-  TCCR3B |= (1 << WGM33) | (1 << WGM32); 
-  TCCR3A |= (1 << WGM31);
-
-  // Set Prescaler to 8
-  TCCR3B |= (1 << CS31); 
-
-  // Set TOP Value to Generate 20 kHz
-  ICR3 = 99; // (16MHz / (8 * 20000)) - 1
 
   // Attempt to connect to RoboClaw
   roboclaw.begin(38400);
@@ -81,6 +69,12 @@ void scoop::init(){
   //   return;  // Exit function or handle the error as needed
   // }
   Serial.println("\tRobo Claw Connected");
+
+  
+}
+
+void scoop::set_command(command_t *command){
+  this->activeCommand = command; 
 }
 
 void scoop::process_command(uint8_t buffer[]){
@@ -89,44 +83,164 @@ void scoop::process_command(uint8_t buffer[]){
   switch(*cmd){
     case COMMAND_START:
       Serial.println("START"); 
-
+      instance->set_command(*cmd); 
       break;
 
     case COMMAND_STOP: 
       Serial.println("STOP"); 
+      instance->set_command(*cmd); 
       break; 
 
     case COMMAND_HOME: 
       Serial.println("HOME COMMAND"); 
+      instance->set_command(*cmd); 
       break; 
-
       
     case COMMAND_MOVE: 
-      Serial.print("MOVE COMMAND"); 
-      Serial.print("  ");
+      // Serial.println("MOVE COMMAND"); 
+      instance->set_command(*cmd); 
       
       move_cmd_t *move_cmd = (move_cmd_t*) (buffer);  
-
       instance->update_position(&(move_cmd->waypoint)); 
-      // Serial.print("X: ");
-      // Serial.print(move_cmd->waypoint.x, 6); 
-      // Serial.print("  ");
+      Serial.print("X: ");
+      Serial.print(move_cmd->waypoint.x, 6); 
+      Serial.print("  ");
 
-      // Serial.print("Y: ");
-      // Serial.print(move_cmd->waypoint.y, 6);
-      // Serial.print("  ");
+      Serial.print("Y: ");
+      Serial.print(move_cmd->waypoint.y, 6);
+      Serial.print("  ");
 
-      // Serial.print("Pitch: ");
-      // Serial.print(move_cmd->waypoint.pitch, 6);
-      // Serial.print("  ");
+      Serial.print("Pitch: ");
+      Serial.print(move_cmd->waypoint.pitch, 6);
+      Serial.print("  ");
 
-      // Serial.print("Vibe Speed: ");
-      // Serial.println(move_cmd->waypoint.vibe_speed, 6);
+      Serial.print("Vibe Speed: ");
+      Serial.println(move_cmd->waypoint.vibe_speed, 6);
       break; 
   }
 }
 
+    // waypoint_t *current_waypoint; 
 
+void scoop::move_task(uint32_t vmax_x, uint32_t a_x, uint32_t vmax_y, uint32_t a_y){
+
+Serial.print("Active Command ");
+Serial.println(this->activeCommand);
+
+
+switch(this->activeCommand){
+
+  case COMMAND_START:
+    this->roboclaw.SpeedM1M2(address, 1000,1000); 
+  break;
+
+  case COMMAND_STOP: 
+    this->roboclaw.SpeedM1M2(address, 0,0); 
+    this->activeCommand = COMMAND_IDLE; 
+  break; 
+
+  case COMMAND_IDLE:
+  break; 
+
+  case COMMAND_MOVE:
+
+    float x = current_waypoint->x;
+    float y = current_waypoint->y;
+    float pitch = current_waypoint->pitch;
+    float vibe = current_waypoint->vibe_speed;
+
+    //NEED TO ADD CLIPPING
+
+    //Get Direction Command from x/y inputs. Apply direction Correction
+    int M1_dir = ((x > 0) ? 1 : -1) * scoop::motor1dir; 
+    int M2_dir = ((y < 0) ? 1 : -1) * scoop::motor2dir; 
+
+    // //Joint Limits:
+    // this->x = clip(x, xMin, xMax);
+    // this->y = clip(y, yMin, yMax); 
+    // this->pitch = clip(pitch, pitchMin, pitchMax);
+    // this->vibe = clip(vibe, 0, 100);
+
+    //Motor 1 Commands
+    uint32_t M1_position = trans2rot(fabs(x)); 
+    uint32_t M1_speed = trans2rot(vmax_x) * M1_dir;
+    uint32_t M1_accel = trans2rot(a_x);
+
+    //Motor 2 Command 
+    uint32_t M2_position  = trans2rot(fabs(y)); 
+    uint32_t M2_speed = trans2rot(vmax_y) * M2_dir;
+    uint32_t M2_accel = trans2rot(a_y);
+    // bool moveStatus = scoop::roboclaw.SpeedAccelDeccelPositionM1M2(address, M1_accel, M1_speed, M1_accel, M1_position, M2_accel, M2_speed, M2_accel, M2_position, 0);
+  break; 
+
+  case COMMAND_HOME: 
+    int xLim; 
+    int yLim; 
+
+    uint32_t speed = trans2rot(20); // [mm/s]
+    uint32_t accel = trans2rot(1000); // [mm/s^2]
+
+    float pitchHOME = 0;
+  
+  switch (home_status){
+
+    case STATE_SYSTEMS_OFF:
+    //Vibe motor -> 0
+    //Pitch motor ->
+    home_status = STATE_WAITING_ENC1; 
+
+    if (this->motor1dir == 1){
+      this->roboclaw.BackwardM1(address, speed); 
+    }
+    if (this->motor1dir == -1){
+      this->roboclaw.ForwardM1(address, speed);
+    }
+    home_status = STATE_WAITING_ENC1;     
+    break; 
+
+
+    case STATE_WAITING_ENC1:
+      if (this->motor1dir == 1){
+        this->roboclaw.BackwardM1(address, speed); 
+      }
+      if (this->motor1dir == -1){
+        this->roboclaw.ForwardM1(address, speed);
+      }
+
+      if (digitalRead(this->xLimPin)){
+        this->roboclaw.SpeedM1M2(address, 0,0); 
+       this->M1_lim_counts = this->roboclaw.ReadEncM1(address); 
+        STATE_MOVE_X0; 
+      }
+      break; 
+
+    case STATE_MOVE_X0:
+      float position = trans2rot(this->x0); 
+      this->roboclaw.SpeedAccelDeccelPositionM1(address, accel, speed, accel, position,0);
+      
+
+
+
+      
+    }
+    
+    
+  }
+
+
+}
+
+
+
+void scoop::PID_task(){
+//PITCH PID 
+  float output = this->pitchMotor.pid->PID_task();
+  this->pitchMotor.setDutyCycle(output); 
+
+//FUTURE VIBE MOTOR PID
+
+
+}
 //Scoop Functions
 
 void scoop::displayspeed(void){
@@ -172,22 +286,20 @@ void scoop::displayspeed(void){
 void scoop::update_position(waypoint_t *waypoint){
 
 this->current_waypoint = waypoint; 
+// Serial.print("X: ");
+// Serial.print(this->current_waypoint->x, 6); 
+// Serial.print("  ");
 
-Serial.print("X: ");
-Serial.print(this->current_waypoint->x, 6); 
-Serial.print("  ");
+// Serial.print("Y: ");
+// Serial.print(this->current_waypoint->y, 6);
+// Serial.print("  ");
 
-Serial.print("Y: ");
-Serial.print(this->current_waypoint->y, 6);
-Serial.print("  ");
+// Serial.print("Pitch: ");
+// Serial.print(this->current_waypoint->pitch, 6);
+// Serial.print("  ");
 
-Serial.print("Pitch: ");
-Serial.print(this->current_waypoint->pitch, 6);
-Serial.print("  ");
-
-Serial.print("Vibe Speed: ");
-Serial.println(this->current_waypoint->vibe_speed, 6);
-
+// Serial.print("Vibe Speed: ");
+// Serial.println(this->current_waypoint->vibe_speed, 6);
 
 }
 
@@ -255,19 +367,6 @@ Serial.println(this->current_waypoint->vibe_speed, 6);
 //     }
 //   return moveStatus;
 // }
-
-
-// void scoop::inputControl(int analogX, int analogY, int analogPitch, int analogVibe, float deadBand, float stepSize){
-
-//     this->x = analogStep(analogX, deadBand, stepSize, xMin, xMax, &this->x);
-//     this->y = analogStep(analogY, deadBand, stepSize, yMin, yMax, &this->y);
-//     this->pitch = analogStep(analogPitch, deadBand, stepSize, pitchMin, pitchMax, &this->pitch);
-//     this->pitch = analogStep(analogVibe, deadBand, stepSize, vibeMin, vibeMax, &this->vibe);
-
-
-
-// }
-
 
 
 // void scoop::home(){     //Return motor positions to (0,0) & store encoder values at this point for abs position? Is this stupid??
@@ -504,19 +603,24 @@ void scoop::motor::setDutyCycle(float dutyCycle){
 
   int dir = (dutyCycle > 0) ? 1 : -1;
   int command = map(abs(dutyCycle), 0, 100, 0, 255); 
+  Serial.print("Command = ");
+  Serial.print(command); 
 
   //CW
   if (dir == 1){
+    Serial.print("Clockwise");
     analogWrite(this->pwm, command);
     digitalWrite(this->dir1, 1);
     digitalWrite(this->dir2, 0);
   }
 
   else if (dir == -1){
+    Serial.print("Counter Clockwise");
     analogWrite(this->pwm, command);
     digitalWrite(this->dir1, 0);
     digitalWrite(this->dir2, 1);
   }
+  Serial.println(); 
 }
 
 float scoop::motor::readAngle(){
@@ -529,13 +633,11 @@ float scoop::motor::readAngle(){
 
 float scoop::motor::set_angle(float angleSet){
   if (pid != nullptr) {
+    
     float angleIn = readAngle(); 
     this->pid->processIn = angleIn;
     this->pid->setpoint = angleSet;
-
-    float output = pid->PID_task(angleIn);
-    this->setDutyCycle(output); 
-
+    this->angle = angleSet; 
 
     // Serial.print("  Angle Set = "); //Commanded Angle
     // Serial.print(angleSet);

@@ -53,7 +53,7 @@ class Scoop:
             while (i < len(traj)):
                 x,y = traj[i]
                 send_packet(self.ser, command= self.command, x=x, y=y, pitch = self.pitch, vibe = self.vibe)
-                time.sleep(0.01)  # Sleep for 0.01 seconds (100 Hz frequency)
+                time.sleep(0.5)  # Sleep for 0.01 seconds (100 Hz frequency)
                 i = i + 1
         finally:
             self.ser.close()

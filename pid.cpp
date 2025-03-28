@@ -2,7 +2,7 @@
 #include "utility.h"
 #include "math.h"
 
-float PID_controller::PID_task(float processIn) { 
+float PID_controller::PID_task() { 
     this->processIn = processIn;  // Keeping 'this->' because it's storing the input
     
     float error = setpoint - processIn;  
