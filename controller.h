@@ -9,6 +9,7 @@ typedef struct{
   float stepsize;
   float min;
   float max; 
+  int invert_channel; 
 }adc_channel_t; 
 
 

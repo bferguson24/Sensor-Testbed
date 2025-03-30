@@ -29,3 +29,12 @@ float analogStep(int analogPin, int deadBand, float stepSize, float min, float m
   
   return *setPoint; 
 }
+
+
+sample::sample(float alpha, float initial_avg)
+  :alpha(alpha), average(initial_avg){}
+
+float sample::moving_average(float newVal){
+  average = (alpha * newVal) + (1- alpha) * average;
+  return average;   
+}

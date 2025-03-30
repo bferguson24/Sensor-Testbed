@@ -7,32 +7,38 @@
 #include "taskhandler.h"
 #include "packet.h"
 #include "controller.h"
+#include "motor.h"
+#include "pid.h"
 
 //Packet 
 SerialPacket packet; 
 Controller controller(30, 0.5); 
 
-
 //Scoop Parameters
   #define address 0x80  
   const int xLimPin = 6;
   const int yLimPin = 7; 
-  const int motor1_dir = 1;
-  const int motor2_dir = 1; 
+  const int x_motor_dir = 1;
+  const int y_motor_dir = 1; 
 
 //Pitch motor:
   int pitch_dir1 = 13;
   int pitch_dir2 = 12;
+  int pitch_output_direction_invert = -1; 
+  int pitch_angle_read_invert = -1;  
   int pitch_pwm = 2;
-  int pitch_angle_pin = A0; 
-  int pitch_angle_offset = 375; 
-  PID_controller pitch_PID (5.0,0.0,1.0);
+  int pitch_angle_pin = A7; 
+  int pitch_angle_offset = 624;
+  sample pitch_avg(0.05, 0.0); 
+  PID_controller pitch_PID (3.0,0.0,1.0, -100, 100, 0.0, 3.0); 
+  motor pitch_motor(pitch_pwm, pitch_dir1, pitch_dir2, pitch_angle_pin, pitch_angle_offset, pitch_output_direction_invert, pitch_angle_read_invert, &pitch_PID, &pitch_avg);
 
 //Vibe Motor
   int vibe_dir1 = 10;
   int vibe_dir2 = 11;
   int vibe_pwm = 3;
-
+  motor vibe_motor(vibe_pwm, vibe_dir1, vibe_dir2); 
+  
 //Joint Limits:
   float xMax = 500; 
   float xMin = 10; 
@@ -47,13 +53,12 @@ RoboClaw roboclaw(&Serial1, 1000);
 
 scoop scoop(roboclaw, address, 
             xLimPin, yLimPin, 
-            motor1_dir, motor2_dir, 
-            pitch_dir1, vibe_dir1, 
-            pitch_dir2, vibe_dir2, 
-            pitch_pwm, vibe_pwm, 
-            pitch_angle_pin, pitch_angle_offset, &pitch_PID, 
-            xMax, xMin, yMax, yMin, pitchMax, pitchMin, vibeMin, vibeMax);
-
+            x_motor_dir, y_motor_dir, 
+            &pitch_motor, &vibe_motor,             
+            xMax, xMin, 
+            yMax, yMin, 
+            pitchMax, pitchMin, 
+            vibeMin, vibeMax);
 
 
 waypoint_t start_waypoint = {1,2,3,4};
@@ -62,8 +67,6 @@ void setup() {
   Serial.begin(115200); // Print Statements
   Serial2.begin(115200); // Incoming python commands
 
-  pinMode(3, OUTPUT); 
-  pinMode(2, OUTPUT); 
 
   packet.setCallback(scoop::process_command);
 
@@ -72,19 +75,37 @@ void setup() {
     Serial.println();
   }
   scoop.init();
+  vibe_motor.init(); 
+
+
 }
 
 
+float accel = 10000; 
+float speed = 0;
+
+int x[] = {0, 500, 1000, 1500, 2000, 2500, 3000}; 
+int y[] = {0 , 500, 0, 500, 0, 500, 500}; 
+
+bool status = false; 
+
 void loop() {
+packet.read_state_task(); 
+scoop.PID_task(); 
 
+
+
+//TESTING
 controller.multichannel_read();
-
 uint32_t y = controller.a0.output; 
 uint32_t x = controller.a1.output; 
 float vibe = controller.a2.output; 
+float pitch = controller.a3.output; 
 
-// roboclaw.SpeedAccelDeccelPositionM1M2(address, accel, speed, accel, x, accel, speed, accel, y, 0);
-scoop.vibeMotor.setDutyCycle(vibe); 
+//Set POSITIONS
+scoop.vibeMotor->setDutyCycle(vibe); 
+roboclaw.SpeedAccelDeccelPositionM1M2(address, accel, speed, accel, x, accel, speed, accel, y, 0);
+scoop.pitchMotor->set_angle(pitch);
 }
 
 
@@ -93,13 +114,7 @@ scoop.vibeMotor.setDutyCycle(vibe);
 // scoop.move_task(); 
 
 
-// Serial.print(0.0); 
-// Serial.print(","); 
-// Serial.print(controller.a0.output); 
-// Serial.print(","); 
-// Serial.print(controller.a1.output); 
-// Serial.print(",");
-// Serial.println(50.0); 
+
 
 
 

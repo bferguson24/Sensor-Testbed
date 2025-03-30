@@ -6,10 +6,10 @@
 Controller::Controller(float deadband, float stepsize)
   : deadzone(deadzone), stepsize(stepsize)
 {
-  a0 = {0, A0, (int)deadband, 20, 0, 10000};
-  a1 = {0, A1, (int)deadband, 20, 0, 10000};
-  a2 = {0, A2, (int)deadband, stepsize, -50.0, 50.0};
-  a3 = {0, A3, (int)deadband, stepsize, 0.0, 50.0};
+  a0 = {0, A0, (int)deadband, 20, 0, 10000, 1};
+  a1 = {0, A1, (int)deadband, 20, 0, 100000, 1};
+  a2 = {0, A2, (int)deadband, 0.5, 0, 100, -1};
+  a3 = {0, A3, (int)deadband, 0.3, -40, 40, 1};
 };
 
 void Controller::analog_step(adc_channel_t *channel){
@@ -27,7 +27,7 @@ void Controller::analog_step(adc_channel_t *channel){
     dval = (rawVal - avgVal) / (avgVal - 0.0) * channel->stepsize;
   }
   
-  channel->output += dval; 
+  channel->output += channel->invert_channel * dval; 
   channel->output = clip(channel->output, channel->min, channel->max); 
 }
 
@@ -42,8 +42,9 @@ void Controller::multichannel_read(){
   Serial.print(","); 
   Serial.print(this->a1.output);
   Serial.print(","); 
-  Serial.println(this->a2.output);
-  
+  Serial.print(this->a2.output);
+  Serial.print(","); 
+  Serial.println(this->a3.output);
   
 
 
