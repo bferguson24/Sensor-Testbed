@@ -21,10 +21,10 @@
           sample* angle_sample = nullptr
         ); 
 
-    float readAngle();
+    float read_angle();
     float set_angle(float angleInput);
     void setSpeed(float freq); 
-    void setDutyCycle(float dutyCycle); 
+    void set_duty_cycle(float dutyCycle); 
     void init(); 
 
   private: 

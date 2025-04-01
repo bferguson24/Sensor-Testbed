@@ -7,7 +7,7 @@ motor::motor(int pwmPin, int dir1Pin, int dir2Pin, int analogPin, float analog_o
 : pwm(pwmPin), dir1(dir1Pin), dir2(dir2Pin), analogReadPin(analogPin), analog_offset(analog_offset), invert_output(invert_output), invert_angle(invert_angle), pid(PID), angle_sample(angle_sample){}
 
 
-void motor::setDutyCycle(float dutyCycle){
+void motor::set_duty_cycle(float dutyCycle){
   int dir = (dutyCycle > 0) ? this->invert_output : -this->invert_output;
   int command = map(abs(dutyCycle), 0, 100, 0, 255); 
 
@@ -26,7 +26,7 @@ void motor::setDutyCycle(float dutyCycle){
 }
 
 
-float motor::readAngle(){
+float motor::read_angle(){
 
   float rawVal = analogRead(this->analogReadPin); 
   float avgVal = this->angle_sample->moving_average(rawVal); 
@@ -41,7 +41,7 @@ float motor::readAngle(){
 float motor::set_angle(float angleSet){
   if (pid != nullptr) {
     
-    float angleIn = readAngle(); 
+    float angleIn = read_angle(); 
     this->pid->processIn = angleIn;
     this->pid->setpoint = angleSet;
     this->angle = angleSet; 

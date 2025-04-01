@@ -52,6 +52,7 @@ Controller controller(30, 0.5);
 RoboClaw roboclaw(&Serial1, 1000);
 
 scoop scoop(roboclaw, address, 
+            &controller, 
             xLimPin, yLimPin, 
             x_motor_dir, y_motor_dir, 
             &pitch_motor, &vibe_motor,             
@@ -78,40 +79,51 @@ void setup() {
   vibe_motor.init(); 
 
 
+
 }
 
 
-float accel = 10000; 
-float speed = 0;
+// uint32_t accel = 10000;
+// uint32_t speed = 0; 
 
-int x[] = {0, 500, 1000, 1500, 2000, 2500, 3000}; 
-int y[] = {0 , 500, 0, 500, 0, 500, 500}; 
-
-bool status = false; 
 
 void loop() {
+
 packet.read_state_task(); 
-scoop.PID_task(); 
+// scoop.PID_task(); 
+// scoop.move_task(); 
+
+
+
 
 
 
 //TESTING
-controller.multichannel_read();
-uint32_t y = controller.a0.output; 
-uint32_t x = controller.a1.output; 
-float vibe = controller.a2.output; 
-float pitch = controller.a3.output; 
+// controller.multichannel_read();
+// uint32_t y = controller.a0.output; 
+// uint32_t x = controller.a1.output; 
+// float vibe = controller.a2.output; 
+// float pitch = controller.a3.output; 
+
+// waypoint_t waypoint= {
+//   controller.a0.output,
+//   controller.a1.output,
+//   controller.a2.output,
+//   controller.a3.output
+// };
+
+// scoop.update_position(&waypoint); 
 
 //Set POSITIONS
-scoop.vibeMotor->setDutyCycle(vibe); 
-roboclaw.SpeedAccelDeccelPositionM1M2(address, accel, speed, accel, x, accel, speed, accel, y, 0);
-scoop.pitchMotor->set_angle(pitch);
+// scoop.vibeMotor->setDutyCycle(vibe); 
+// scoop.update_position(waypoint_t *waypoint)
+// roboclaw.SpeedAccelDeccelPositionM1M2(address, accel, speed, accel, x, accel, speed, accel, y, 0);
+// scoop.pitchMotor->set_angle(pitch);
 }
 
 
 
 
-// scoop.move_task(); 
 
 
 

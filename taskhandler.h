@@ -3,14 +3,26 @@
 #include <Arduino.h>
 #include "scoop.h"
 
-typedef uint8_t command_t;
-enum {
+
+// typedef __attribute__((packed))uint8_t command_t;
+// enum {
+//   COMMAND_START,
+//   COMMAND_STOP,
+//   COMMAND_HOME,
+//   COMMAND_MOVE_WAYPOINT,
+//   COMMAND_MOVE_MANUAL,
+//   COMMAND_IDLE
+// }; 
+
+typedef enum {
+  COMMAND_IDLE,
   COMMAND_START,
   COMMAND_STOP,
   COMMAND_HOME,
-  COMMAND_MOVE,
-  COMMAND_IDLE, 
-}; 
+  COMMAND_MOVE_WAYPOINT,
+  COMMAND_MOVE_MANUAL
+} command_t;
+
 
 
 

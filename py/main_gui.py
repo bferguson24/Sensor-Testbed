@@ -33,8 +33,10 @@ def run_gui():
     vibration_var.trace_add("write", update_scoop_values)
 
     # Create buttons
-    home_button = tk.Button(root, text="Home", command=scoop.home)
-    home_button.grid(row=0, column=0, padx=10, pady=10)
+
+
+    idle_button = tk.Button(root, text="Idle", command=scoop.idle)
+    idle_button.grid(row=0, column=0, padx=10, pady=10)
 
     start_button = tk.Button(root, text="Start", command=scoop.start)
     start_button.grid(row=0, column=1, padx=10, pady=10)
@@ -42,21 +44,27 @@ def run_gui():
     stop_button = tk.Button(root, text="Stop", command=scoop.stop)
     stop_button.grid(row=0, column=2, padx=10, pady=10)
 
+    home_button = tk.Button(root, text="Home", command=scoop.home)
+    home_button.grid(row=0, column=3, padx=10, pady=10)
+
     run_dig_button = tk.Button(root, text="Run Dig", command=scoop.dig_sequence)
-    run_dig_button.grid(row=0, column=3, padx=10, pady=10)
+    run_dig_button.grid(row=1, column=0, padx=10, pady=10)
+
+    run_dig_button = tk.Button(root, text="Manual Control", command=scoop.manual_control)
+    run_dig_button.grid(row=1, column=1, padx=10, pady=10)
 
     # Create labels and entry widgets for angle and max vibration
     angle_label = tk.Label(root, text="Angle:")
-    angle_label.grid(row=1, column=0, padx=10, pady=10)
+    angle_label.grid(row=2, column=0, padx=10, pady=10)
 
     angle_entry = tk.Entry(root, textvariable=angle_var)
-    angle_entry.grid(row=1, column=1, padx=10, pady=10)
+    angle_entry.grid(row=2, column=1, padx=10, pady=10)
 
     vibration_label = tk.Label(root, text="Max Vibration:")
-    vibration_label.grid(row=2, column=0, padx=10, pady=10)
+    vibration_label.grid(row=3, column=0, padx=10, pady=10)
 
     vibration_entry = tk.Entry(root, textvariable=vibration_var)
-    vibration_entry.grid(row=2, column=1, padx=10, pady=10)
+    vibration_entry.grid(row=3, column=1, padx=10, pady=10)
 
     # # Create the submit button
     # submit_button = tk.Button(root, text="Submit", command=lambda: submit_action(angle_entry.get(), vibration_entry.get()))

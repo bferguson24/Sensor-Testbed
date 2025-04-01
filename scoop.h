@@ -4,6 +4,7 @@
 #include "pid.h"
 #include "taskhandler.h"
 #include "motor.h"
+#include "controller.h"
 
 //Peyton 
 //include any accel libraries here: 
@@ -29,6 +30,7 @@ private:
 //Pinout
   RoboClaw &roboclaw;
   uint8_t address;
+  Controller *controller; 
 
   int xLimPin;
   int yLimPin;
@@ -71,6 +73,7 @@ public:
 
   //Contructor
   scoop(RoboClaw &roboclaw, uint8_t address, 
+          Controller *controller,
           int xLimPin, int yLimPin, 
           int x_motor_dir, int y_motor_dir, 
           motor *pitchMotor, motor *vibeMotor,
@@ -79,7 +82,8 @@ public:
           float pitchMax, float pitchMin, 
           float vibeMin, float vibeMax);
 
-    void move_task(uint32_t vmax_x = 10000, uint32_t a_x = 10000 , uint32_t vmax_y = 10000, uint32_t a_y = 10000); 
+    void move_task(); 
+    void move_waypoint(uint32_t vmax_x = 10000, uint32_t a_x = 10000 , uint32_t vmax_y = 10000, uint32_t a_y = 10000); 
     void PID_task();
     void commandHandlerTask(); 
     static void process_command(uint8_t *buffer); 
